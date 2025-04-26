@@ -9,3 +9,34 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
     - "5432:5432"
+    
+  frontend:
+    build:
+      context: ./paggo-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./paggo-frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
+    restart: unless-stopped
+    
+  backend:
+    build:
+      context: ./paggo-backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./paggo-frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      - db
+    restart: unless-stopped
