@@ -3,40 +3,60 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import styles from '@/styles/Login.module.css';
 
-export default function Login() {
+export default function Register() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Here you would typically validate credentials against an API
-    if (email && password) {
-      // For now, just redirect to chat page on successful form submission
-      router.push('/chat');
-    } else {
+
+    if (!name || !email || !password || !confirmPassword) {
       setError('Por favor, preencha todos os campos.');
+      return;
     }
+
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem.');
+      return;
+    }
+
+    // Aqui você pode adicionar a lógica para registrar o usuário via API
+    router.push('/chat'); // Redireciona para a página de chat após o cadastro
   };
 
   return (
     <div className={styles.container}>
       <Head>
-        <title>Login - Paggo OCR</title>
-        <meta name="description" content="Login page for Paggo OCR" />
+        <title>Cadastro - Paggo OCR</title>
+        <meta name="description" content="Página de cadastro para Paggo OCR" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
         <div className={styles.loginBox}>
           <h1 className={styles.title}>Paggo OCR</h1>
-          <h2 className={styles.subtitle}>Login</h2>
-          
+          <h2 className={styles.subtitle}>Cadastro</h2>
+
           {error && <p className={styles.error}>{error}</p>}
-          
-          <form onSubmit={handleLogin} className={styles.form}>
+
+          <form onSubmit={handleRegister} className={styles.form}>
+            <div className={styles.inputGroup}>
+              <label htmlFor="name">Nome</label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Seu nome"
+                className={styles.input}
+                required
+              />
+            </div>
+
             <div className={styles.inputGroup}>
               <label htmlFor="email">Email</label>
               <input
@@ -49,7 +69,7 @@ export default function Login() {
                 required
               />
             </div>
-            
+
             <div className={styles.inputGroup}>
               <label htmlFor="password">Senha</label>
               <input
@@ -62,15 +82,28 @@ export default function Login() {
                 required
               />
             </div>
-            
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="confirmPassword">Confirme sua senha</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirme sua senha"
+                className={styles.input}
+                required
+              />
+            </div>
+
             <button type="submit" className={styles.button}>
-              Entrar
+              Cadastrar
             </button>
           </form>
             <button
-                onClick={() => router.push('/register')}
+                onClick={() => router.push('/')}
                 className={styles.button}>
-                Cadastre-se
+                Voltar para Login
             </button>
         </div>
       </main>
