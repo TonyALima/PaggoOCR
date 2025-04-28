@@ -15,8 +15,14 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return "Document Processing API is running!"', () => {
+      expect(appController.getHello()).toBe('Document Processing API is running!');
+    });
+  });
+
+  describe('health check', () => {
+    it('should return health status', () => {
+      expect(appController.healthCheck()).toEqual({ status: 'ok' });
     });
   });
 });

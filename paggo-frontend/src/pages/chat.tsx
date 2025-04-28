@@ -32,9 +32,9 @@ const ChatPage: React.FC = () => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (newMessage.trim() === '' && attachments.length === 0) return;
-    
+
     // Add user message to chat
     const userMessage: Message = {
       id: messages.length + 1,
@@ -42,31 +42,62 @@ const ChatPage: React.FC = () => {
       isUser: true,
       timestamp: new Date()
     };
-    
+
     setMessages([...messages, userMessage]);
     setNewMessage("");
     setIsProcessing(true);
-    
+
     // Check if this is the first user message and if it doesn't have attachments
     const isFirstUserMessage = !messages.some(m => m.isUser);
-    
+
+    // Handle file upload if there are attachments
+    if (attachments.length > 0) {
+      try {
+        const formData = new FormData();
+        formData.append('file', attachments[0].data);
+        formData.append('userId', '123e4567-e89b-12d3-a456-426614174000'); // Replace with the actual user ID
+        
+        const response = await fetch('http://localhost:3001/api/documents/upload', { // Updated to match backend service port
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upload files');
+        }
+      } catch (error) {
+        console.error('Error uploading files:', error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: messages.length + 2,
+            text: `Ocorreu um erro ao enviar os arquivos: ${error}. Por favor, tente novamente.`,
+            isUser: false,
+            timestamp: new Date(),
+          },
+        ]);
+        setIsProcessing(false);
+        return;
+      }
+    }
+
     // Simulate response (in a real app, this would call an API)
     setTimeout(() => {
       let responseText = "";
-      
+
       if (isFirstUserMessage && attachments.length === 0) {
         responseText = "Para começar o processamento, preciso que você anexe um documento. Por favor, clique no botão de anexo e escolha um arquivo.";
       } else {
         responseText = `Recebi sua mensagem${attachments.length > 0 ? ' e ' + attachments.length + ' arquivo(s)' : ''}. Em um sistema real, eu processaria isso e responderia adequadamente.`;
       }
-      
+
       const botResponse: Message = {
         id: messages.length + 2,
         text: responseText,
         isUser: false,
         timestamp: new Date()
       };
-      
+
       setMessages(prev => [...prev, botResponse]);
       setAttachments([]);
       setIsProcessing(false);

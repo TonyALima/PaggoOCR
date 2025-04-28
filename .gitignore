@@ -6,3 +6,8 @@ node_modules
 
 /.vscode
 
+dist
+generated
+migrations
+uploads
+*.traineddata
