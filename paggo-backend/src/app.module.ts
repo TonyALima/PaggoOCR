@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { OcrModule } from './modules/ocr/ocr.module';
 import { LlmModule } from './modules/llm/llm.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -31,6 +32,7 @@ import { join } from 'path';
     DocumentsModule,
     OcrModule,
     LlmModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
