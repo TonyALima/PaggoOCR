@@ -19,8 +19,6 @@ services:
     volumes:
       - ./paggo-frontend:/app
       - /app/node_modules
-    environment:
-      - NODE_ENV=development
     depends_on:
       - backend
     restart: unless-stopped
