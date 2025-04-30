@@ -15,7 +15,7 @@ import { join } from 'path';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: '../.env',
     }),
     MulterModule.registerAsync({
       useFactory: async () => ({
