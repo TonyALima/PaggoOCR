@@ -11,7 +11,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiBody, ApiTags, ApiParam } from '@nestjs/swagger';
 import { UploadDocumentDto } from './dto/upload-document.dto';
-import { GetDocumentHistoryDto } from './dto/history-document.dto';
+import { UserDocumentDto } from './dto/user-document.dto';
 import { DocumentsService } from './documents.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -78,8 +78,8 @@ export class DocumentsController {
 
   @Post('history')
   @ApiConsumes('application/json')
-  @ApiBody({type: GetDocumentHistoryDto})
-  async getDocumentHistory(@Body() body: GetDocumentHistoryDto) {
+  @ApiBody({type: UserDocumentDto})
+  async getDocumentHistory(@Body() body: UserDocumentDto) {
     const { userId, documentId } = body;
 
     // Check if the document belongs to the user

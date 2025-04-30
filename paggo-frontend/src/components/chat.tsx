@@ -22,6 +22,7 @@ const Chat = ({ session }: { session: Session }) => {
   const [fileUploaded, setFileUploaded] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [userDocuments, setUserDocuments] = useState<Document[]>([]); // Example documents
+  const [currentDocumentId, setCurrentDocumentId] = useState<string | null>(null);
   const messageEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -57,22 +58,22 @@ const Chat = ({ session }: { session: Session }) => {
 
   const handleSendMessage = async () => {
     if (newMessage.trim() === "" || isWaitingForResponse) return;
-  
+
     const userMessage = { id: messages.length + 1, text: newMessage, isUser: true };
-    setMessages([...messages, userMessage]);
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
     setIsWaitingForResponse(true); // Block further messages
-  
+
     try {
       const response = await fetch("/api/chat/message", {
         credentials: "include",
         method: "POST",
         headers: { "Content-Type": "multipart/form-data" },
-        body: JSON.stringify({ message: newMessage }),
+        body: JSON.stringify({ message: newMessage, documentId: currentDocumentId }),
       });
-  
+
       const data = await response.json();
-      const botMessage = { id: messages.length + 2, text: data.response, isUser: false };
-      setMessages((prev) => [...prev, botMessage]);
+      const botMessage = { id: userMessage.id + 1, text: data.response, isUser: false }; // Increment id correctly
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -84,11 +85,11 @@ const Chat = ({ session }: { session: Session }) => {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-  
+
     const userMessage = { id: messages.length + 1, text: `📄 Documento enviado: ${file.name}`, isUser: true };
     setMessages([...messages, userMessage]);
     setIsWaitingForResponse(true); // Block further messages
-  
+
     try {
       const response = await fetch("/api/chat/upload", {
         credentials: "include",
@@ -96,7 +97,7 @@ const Chat = ({ session }: { session: Session }) => {
         headers: { "Content-Type": "multipart/form-data" },
         body: JSON.stringify({ fileName: file.name }),
       });
-  
+
       const data = await response.json();
       const botMessage = { id: messages.length + 2, text: data.response.messsage, isUser: false };
       const documentId = data.response.docId;
@@ -110,7 +111,7 @@ const Chat = ({ session }: { session: Session }) => {
     } finally {
       setIsWaitingForResponse(false); // Allow new messages
     }
-  
+
     setFileUploaded(true); // Hide file input
   };
 
@@ -144,8 +145,11 @@ const Chat = ({ session }: { session: Session }) => {
         { id: 1, text: "Olá! Anexe um documento para começar!", isUser: false },
       ]);
       setFileUploaded(false); // Show file input
+      setCurrentDocumentId(null); // Reset current document ID
       return;
     }
+
+    setCurrentDocumentId(document.id); // Update current document ID
 
     const fetchDocumentHistory = async (): Promise<[{ query: string; answer: string; timestamp: string }]|null> => {
       try {

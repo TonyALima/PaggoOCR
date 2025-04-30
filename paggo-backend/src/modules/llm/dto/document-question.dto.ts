@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class GetDocumentHistoryDto {
+export class DocumentQuestionDto {
     @ApiProperty({
       description: 'ID do usuário',
       example: '123e4567-e89b-12d3-a456-426614174000',
@@ -17,4 +17,12 @@ export class GetDocumentHistoryDto {
     @IsString()
     @IsNotEmpty()
     documentId: string;
-  }
+
+    @ApiProperty({
+      description: 'Pergunta relacionada ao documento',
+      example: 'Qual é o conteúdo do documento?',
+    })
+    @IsString()
+    @IsNotEmpty()
+    question: string;
+}

@@ -9,29 +9,60 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401 }
-    )
-  }
-  // Check if the request is a multipart/form-data
-  const contentType = request.headers.get("content-type");
-  if (!contentType || !contentType.startsWith("multipart/form-data")) {
-    return NextResponse.json(
-      { error: "Invalid content type" },
-      { status: 400 }
     );
   }
-  // Parse the data
-  const body = await request.json();
-  const { message } = body;
 
-  if (message) {
+  try {
+    const contentType = request.headers.get("content-type");
+    if (!contentType || !contentType.startsWith("multipart/form-data")) {
+      return NextResponse.json(
+        { error: "Invalid content type" },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+    const { message, documentId } = body;
+
+    if (!message || !documentId) {
+      return NextResponse.json(
+        { error: "Message and Document ID are required" },
+        { status: 400 }
+      );
+    }
+
+    const backendUrl = process.env.BACKEND_URL;
+    if (!backendUrl) {
+      throw new Error("BACKEND_URL is not defined in the environment variables.");
+    }
+
+    const userId = session.user!.id;
+    const response = await fetch(`${backendUrl}/llm/question`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId,
+        documentId,
+        question: message,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      return NextResponse.json(
+        { error: error.message || "Failed to process the message" },
+        { status: response.status }
+      );
+    }
+
+    const result = await response.json();
+    return NextResponse.json(result, { status: 200 });
+  } catch (error) {
     return NextResponse.json(
-      { response: `Recebi sua mensagem: "${message}". Em um sistema real, eu processaria isso.`},
-      { status: 200 }
+      { error: error || "Internal Server Error" },
+      { status: 500 }
     );
   }
- 
-  return NextResponse.json(
-    { error: "Invalid request" },
-    { status: 400 }
-  );
 }
