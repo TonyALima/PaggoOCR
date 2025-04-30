@@ -36,51 +36,67 @@ const Chat = ({ session }: { session: Session }) => {
     ]);
   }, [session]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (newMessage.trim() === "" || isWaitingForResponse) return;
-
+  
     const userMessage = { id: messages.length + 1, text: newMessage, isUser: true };
     setMessages([...messages, userMessage]);
     setIsWaitingForResponse(true); // Block further messages
-
-    // Simulate bot response
-    setTimeout(() => {
-      const botMessage = {
-        id: messages.length + 2,
-        text: "Recebi sua mensagem. Em um sistema real, eu processaria isso.",
-        isUser: false,
-      };
+  
+    try {
+      const response = await fetch("/api/chat/message", {
+        credentials: "include",
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data" },
+        body: JSON.stringify({ message: newMessage }),
+      });
+  
+      const data = await response.json();
+      const botMessage = { id: messages.length + 2, text: data.response, isUser: false };
       setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    } finally {
       setIsWaitingForResponse(false); // Allow new messages
-    }, 1000);
-
-    setNewMessage("");
+      setNewMessage("");
+    }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
+  
     const userMessage = { id: messages.length + 1, text: `📄 Documento enviado: ${file.name}`, isUser: true };
     setMessages([...messages, userMessage]);
     setIsWaitingForResponse(true); // Block further messages
-
-    // Simulate bot response
-    setTimeout(() => {
-      const botMessage = {
-        id: messages.length + 2,
-        text: "Documento recebido. Em um sistema real, eu processaria isso.",
-        isUser: false,
-      };
+  
+    try {
+      const response = await fetch("/api/chat/upload", {
+        credentials: "include",
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data" },
+        body: JSON.stringify({ fileName: file.name }),
+      });
+  
+      const data = await response.json();
+      const botMessage = { id: messages.length + 2, text: data.response.messsage, isUser: false };
+      const documentId = data.response.docId;
       setMessages((prev) => [...prev, botMessage]);
+      setUserDocuments((prev) => [
+        ...prev,
+        { id: documentId, fileName: file.name },
+      ]);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    } finally {
       setIsWaitingForResponse(false); // Allow new messages
-    }, 1000);
-
+    }
+  
     setFileUploaded(true); // Hide file input
   };
 
-  const handleDocumentClick = (documentId: string) => {
-    if (documentId === "0") {
+  const handleDocumentClick = (document: Document) => {
+    if (document.id === "0") {
       setMessages([
         { id: 1, text: "Olá! Anexe um documento para começar!", isUser: false },
       ]);
@@ -88,8 +104,8 @@ const Chat = ({ session }: { session: Session }) => {
       return;
     }
     setMessages([
-      { id: 1, text: `📄 Documento selecionado: ${documentId}`, isUser: true },
-      { id: 2, text: `Você selecionou o documento "${documentId}". Em um sistema real, eu processaria isso.`, isUser: false },
+      { id: 1, text: `📄 Documento selecionado: ${document.fileName}`, isUser: true },
+      { id: 2, text: `Você selecionou o documento "${document.fileName}". Em um sistema real, eu processaria isso.`, isUser: false },
     ]);
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
     setFileUploaded(true); // Hide file input

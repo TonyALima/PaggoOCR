@@ -8,7 +8,7 @@ export interface Document {
 
 interface MyDocumentsProps {
     documentNames: Document[];
-    onDocumentClick: (documentId: string) => void;
+    onDocumentClick: (document: Document) => void;
 }
 
 const MyDocuments = ({ documentNames, onDocumentClick }: MyDocumentsProps) => {
@@ -18,11 +18,11 @@ const MyDocuments = ({ documentNames, onDocumentClick }: MyDocumentsProps) => {
                 <h1 className="font-bold">Meus Documentos</h1>
             </div>
             <div className="flex flex-col gap-2">
-                <Button variant="secondary" key={'0'} onClick={() => onDocumentClick('0')}>
+                <Button variant="secondary" key={'0'} onClick={() => onDocumentClick({ id: '0', fileName: 'Novo Documento' })}>
                     Novo Documento
                 </Button>
                 {documentNames.map((doc) => (
-                    <Button variant="secondary" key={doc.id} onClick={() => onDocumentClick(doc.id)}>
+                    <Button variant="secondary" key={doc.id} onClick={() => onDocumentClick(doc)}>
                         {doc.fileName}
                     </Button>
                 ))}
