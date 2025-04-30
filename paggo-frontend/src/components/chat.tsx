@@ -28,12 +28,23 @@ const Chat = ({ session }: { session: Session }) => {
   }, [isWaitingForResponse]);
 
   useEffect(() => {
-    console.log("User session:", session);
-    setUserDocuments([
-      { id: "1", fileName: "documento1.pdf" },
-      { id: "2", fileName: "documento2.pdf" },
-      { id: "3", fileName: "documento3.pdf" },
-    ]);
+    const fetchUserDocuments = async () => {
+      try {
+        const response = await fetch("/api/chat/userDocuments", {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const documents = await response.json();
+          setUserDocuments(documents);
+        } else {
+          console.error("Failed to fetch user documents");
+        }
+      } catch (error) {
+        console.error("Error fetching user documents:", error);
+      }
+    };
+
+    fetchUserDocuments();
   }, [session]);
 
   const handleSendMessage = async () => {
