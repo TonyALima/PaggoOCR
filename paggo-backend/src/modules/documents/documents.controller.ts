@@ -6,10 +6,12 @@ import {
   UseInterceptors,
   Get,
   Param,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiBody, ApiTags, ApiParam } from '@nestjs/swagger';
 import { UploadDocumentDto } from './dto/upload-document.dto';
+import { GetDocumentHistoryDto } from './dto/history-document.dto';
 import { DocumentsService } from './documents.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -74,12 +76,21 @@ export class DocumentsController {
     }));
   }
 
-  @Get('results/:documentId')
-  @ApiParam({
-    name: 'documentId',
-    description: 'ID do documento para buscar os resultados do LLM',    
-  })
-  async getDocumentResults(@Param('documentId') documentId: string) {
+  @Post('history')
+  @ApiConsumes('application/json')
+  @ApiBody({type: GetDocumentHistoryDto})
+  async getDocumentHistory(@Body() body: GetDocumentHistoryDto) {
+    const { userId, documentId } = body;
+
+    // Check if the document belongs to the user
+    const document = await this.prisma.document.findFirst({
+      where: { id: documentId, userId },
+    });
+
+    if (!document) {
+      throw new BadRequestException('Document not found or does not belong to the user');
+    }
+
     const chatHistory = await this.prisma.chatHistory.findMany({
       where: { documentId },
       select: { query: true, answer: true, timestamp: true },

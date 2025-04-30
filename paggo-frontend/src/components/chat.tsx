@@ -7,8 +7,15 @@ import { MyDocuments, Document } from "@/components/my-documents";
 import { MessageBubble } from "@/components/ui/message-bubble";
 import { Session } from "next-auth";
 
+// Define a type for messages
+type Message = {
+  id: number;
+  text: string;
+  isUser: boolean;
+};
+
 const Chat = ({ session }: { session: Session }) => {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     { id: 1, text: "Olá! Anexe um documento para começar!", isUser: false },
   ]);
   const [newMessage, setNewMessage] = useState("");
@@ -107,7 +114,31 @@ const Chat = ({ session }: { session: Session }) => {
     setFileUploaded(true); // Hide file input
   };
 
-  const handleDocumentClick = (document: Document) => {
+  const setDocHistory = async (
+    history: [{ query: string; answer: string; timestamp: string }] | null,
+    fileName: string
+  ) => {
+    if (!history) {
+      setMessages([
+        { id: 1, text: `📄 Documento selecionado: ${fileName}`, isUser: true },
+      ]);
+      return;
+    }
+    // order history by timestamp
+    history.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    const fileMessage = `📄 Documento selecionado: ${fileName}`;
+    history[0].query = fileMessage;
+    const newMessages: Message[] = [];
+    history.forEach((item) => {
+      const userMessage: Message = { id: newMessages.length + 1, text: item.query, isUser: true };
+      const botMessage: Message = { id: newMessages.length + 2, text: item.answer, isUser: false };
+      newMessages.push(userMessage);
+      newMessages.push(botMessage);
+    });
+    setMessages(newMessages);
+  };
+
+  const handleDocumentClick = async (document: Document) => {
     if (document.id === "0") {
       setMessages([
         { id: 1, text: "Olá! Anexe um documento para começar!", isUser: false },
@@ -115,10 +146,34 @@ const Chat = ({ session }: { session: Session }) => {
       setFileUploaded(false); // Show file input
       return;
     }
-    setMessages([
-      { id: 1, text: `📄 Documento selecionado: ${document.fileName}`, isUser: true },
-      { id: 2, text: `Você selecionou o documento "${document.fileName}". Em um sistema real, eu processaria isso.`, isUser: false },
-    ]);
+
+    const fetchDocumentHistory = async (): Promise<[{ query: string; answer: string; timestamp: string }]|null> => {
+      try {
+        const response = await fetch("/api/chat/history", {
+          credentials: "include",
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ documentId: document.id }),
+        });
+
+        if (response.ok) {
+          const history = await response.json();
+          return history;
+        } else {
+          console.error("Failed to fetch document history");
+          return null;
+        }
+      } catch (error) {
+        console.error("Error fetching document history:", error);
+        return null;
+      }
+    };
+
+    setIsWaitingForResponse(true); // Block further messages
+
+    const history = await fetchDocumentHistory();
+    setDocHistory(history, document.fileName);
+
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
     setFileUploaded(true); // Hide file input
     setIsWaitingForResponse(false); // Reset waiting state
