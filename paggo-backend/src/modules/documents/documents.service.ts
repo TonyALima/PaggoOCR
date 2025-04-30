@@ -38,6 +38,6 @@ export class DocumentsService {
       },
     });
 
-    return document;
+    return document.id;
   }
 }

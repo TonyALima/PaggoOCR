@@ -48,7 +48,7 @@ export class LlmController {
         },
       });
 
-    return { resumo: explanation };
+    return { explanation };
   }
 
   @Post('question')

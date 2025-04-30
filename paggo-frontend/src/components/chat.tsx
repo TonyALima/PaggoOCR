@@ -60,7 +60,7 @@ const Chat = ({ session }: { session: Session }) => {
     if (newMessage.trim() === "" || isWaitingForResponse) return;
 
     const userMessage = { id: messages.length + 1, text: newMessage, isUser: true };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    setMessages([...messages ,userMessage]);
     setIsWaitingForResponse(true); // Block further messages
 
     try {
@@ -71,8 +71,8 @@ const Chat = ({ session }: { session: Session }) => {
         body: JSON.stringify({ message: newMessage, documentId: currentDocumentId }),
       });
 
-      const data = await response.json();
-      const botMessage = { id: userMessage.id + 1, text: data.response, isUser: false }; // Increment id correctly
+      const { answer } = await response.json();
+      const botMessage = { id: userMessage.id + 1, text: answer, isUser: false };
       setMessages((prevMessages) => [...prevMessages, botMessage]);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -87,32 +87,36 @@ const Chat = ({ session }: { session: Session }) => {
     if (!file) return;
 
     const userMessage = { id: messages.length + 1, text: `📄 Documento enviado: ${file.name}`, isUser: true };
-    setMessages([...messages, userMessage]);
     setIsWaitingForResponse(true); // Block further messages
+    setMessages([...messages ,userMessage]);
 
+    const data = new FormData();
+    data.append("file", file);
     try {
       const response = await fetch("/api/chat/upload", {
         credentials: "include",
         method: "POST",
-        headers: { "Content-Type": "multipart/form-data" },
-        body: JSON.stringify({ fileName: file.name }),
+        body: data,
       });
 
-      const data = await response.json();
-      const botMessage = { id: messages.length + 2, text: data.response.messsage, isUser: false };
-      const documentId = data.response.docId;
-      setMessages((prev) => [...prev, botMessage]);
+      const { documentId, explanation,} = await response.json();
+      const botMessage = { id: userMessage.id + 1, text: explanation, isUser: false };
+      setMessages((prev) => [...prev ,botMessage]);
       setUserDocuments((prev) => [
         ...prev,
         { id: documentId, fileName: file.name },
       ]);
+      setFileUploaded(true); // Hide file input
     } catch (error) {
       console.error("Error uploading file:", error);
+      setMessages((prev) => [
+        ...prev,
+        { id: userMessage.id + 1, text: "Erro ao enviar o documento. Tente novamente.", isUser: false },
+      ]);
     } finally {
       setIsWaitingForResponse(false); // Allow new messages
     }
 
-    setFileUploaded(true); // Hide file input
   };
 
   const setDocHistory = async (

@@ -35,26 +35,21 @@ export class DocumentsController {
       console.log('Uploaded:', file);
       console.log('UserId:', uploadDocumentDto.userId);
 
-      const document = await this.documentsService.processDocument(
+      const documentId = await this.documentsService.processDocument(
         file,
         uploadDocumentDto.userId,
       );
 
-      if (!document) {
-        return {
-          message: 'Error processing the document',
-        };
+      if (!documentId) {
+        throw new BadRequestException('Error processing the document');
       }
 
       return {
-        message: 'File uploaded and processed successfully',
+        documentId: documentId,
       };
     } catch (error) {
       console.error('Error uploading file:', error);
-      return {
-        message: 'An error occurred while uploading the file',
-        error: error.message,
-      };
+      throw new BadRequestException('Error processing the document');
     }
   }
 
