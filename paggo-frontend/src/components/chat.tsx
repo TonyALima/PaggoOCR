@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SignOut } from "@/components/sign-out";
 import { MyDocuments, Document } from "@/components/my-documents";
+import { MessageBubble } from "@/components/ui/message-bubble";
 import { Session } from "next-auth";
 
 const Chat = ({ session }: { session: Session }) => {
@@ -134,18 +135,12 @@ const Chat = ({ session }: { session: Session }) => {
       <div className="absolute top-4 right-4">
         <SignOut />
       </div>
-      <div className="relative flex flex-col items-center p-4 mx-auto w-[60%]">
+      <div className="relative flex flex-col items-center p-4 mx-auto w-[70%]">
         <h1 className="text-center text-xl font-bold mb-4">Chat</h1>
 
-        <div className="flex flex-col w-full max-w-2xl h-[600px] bg-white border rounded-lg shadow-sm p-4 overflow-y-auto">
+        <div className="flex flex-col w-full h-[700px] bg-white border rounded-lg shadow-sm p-4 overflow-y-auto">
           {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`mb-2 p-2 rounded-md inline-block max-w-[80%] ${message.isUser ? "bg-blue-100 text-right self-end" : "bg-gray-100 text-left self-start"
-                }`}
-            >
-              {message.text}
-            </div>
+            <MessageBubble key={message.id} text={message.text} isUser={message.isUser} />
           ))}
           <div ref={messageEndRef} />
         </div>
