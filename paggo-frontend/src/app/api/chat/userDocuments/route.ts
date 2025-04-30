@@ -12,12 +12,33 @@ export async function GET() {
     );
   }
 
-  // Simulated user documents
-  const userDocuments = [
-    { id: "1", fileName: "documento1.pdf" },
-    { id: "2", fileName: "documento2.pdf" },
-    { id: "3", fileName: "documento3.pdf" },
-  ];
+  try {
+    const backendUrl = process.env.BACKEND_URL;
+    if (!backendUrl) {
+      throw new Error("BACKEND_URL is not defined in the environment variables.");
+    }
+    
+    const response = await fetch(`${backendUrl}/documents/user/${session.user!.id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  return NextResponse.json(userDocuments, { status: 200 });
+    if (!response.ok) {
+      const error = await response.json();
+      return NextResponse.json(
+        { error: error.message || "Failed to fetch user documents" },
+        { status: response.status }
+      );
+    }
+
+    const userDocuments = await response.json();
+    return NextResponse.json(userDocuments, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error || "Internal Server Error" },
+      { status: 500 }
+    );
+  }
 }

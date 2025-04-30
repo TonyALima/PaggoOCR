@@ -11,18 +11,17 @@ export const { handlers, signIn, auth } = NextAuth({
             try {
                 if (!credentials || !credentials.email || !credentials.password) {
                     throw new Error("Missing credentials.");
-                }
-                let user = null;
+                }                
                 const email = credentials.email as string;
                 const password = credentials.password as string;
 
-                user = await getUserIdFromDb(email, password);
+                const userId = await getUserIdFromDb(email, password);
 
-                if (!user) {
+                if (!userId) {
                     throw new Error("Invalid credentials.");
                 }
 
-                return { email: email, id: user };
+                return { user: { id: userId }, email: email };
             } catch (error) {
                 console.error("Error in authorize:", error);
                 throw new Error("Invalid credentials.");
@@ -30,6 +29,14 @@ export const { handlers, signIn, auth } = NextAuth({
         }
     })
     ],
+    callbacks: {
+        async session({ session, token }) {
+            if (session.user && token.sub) {
+                session.user.id = token.sub as string;
+            }
+            return session;
+        }
+    }
 });
 
 async function getUserIdFromDb(email: string, passwordHash: string): Promise<string | null> {
@@ -47,7 +54,7 @@ async function getUserIdFromDb(email: string, passwordHash: string): Promise<str
         }
 
         const data = await response.json();
-        return data.message; // Assuming the API returns { message: userId }
+        return data.message; // API returns { message: userId }
     } catch (error) {
         console.error("Error validating user:", error);
         return null;
