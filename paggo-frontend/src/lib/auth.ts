@@ -20,8 +20,8 @@ export const { handlers, signIn, auth } = NextAuth({
                 if (!userId) {
                     throw new Error("Invalid credentials.");
                 }
-
-                return { user: { id: userId }, email: email };
+                
+                return { id: userId, email: email }; // Ensure `id` is returned
             } catch (error) {
                 console.error("Error in authorize:", error);
                 throw new Error("Invalid credentials.");
@@ -30,6 +30,12 @@ export const { handlers, signIn, auth } = NextAuth({
     })
     ],
     callbacks: {
+        async jwt({ token, user }) {
+            if (user?.id) {
+                token.sub = user.id;
+            }
+            return token;
+        },
         async session({ session, token }) {
             if (session.user && token.sub) {
                 session.user.id = token.sub as string;
