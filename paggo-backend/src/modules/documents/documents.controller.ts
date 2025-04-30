@@ -32,9 +32,6 @@ export class DocumentsController {
     @Body() uploadDocumentDto: UploadDocumentDto,
   ) {
     try {
-      console.log('Uploaded:', file);
-      console.log('UserId:', uploadDocumentDto.userId);
-
       const documentId = await this.documentsService.processDocument(
         file,
         uploadDocumentDto.userId,

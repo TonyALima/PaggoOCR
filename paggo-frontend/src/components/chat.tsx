@@ -87,8 +87,8 @@ const Chat = ({ session }: { session: Session }) => {
     if (!file) return;
 
     const userMessage = { id: messages.length + 1, text: `📄 Documento enviado: ${file.name}`, isUser: true };
-    setIsWaitingForResponse(true); // Block further messages
     setMessages([...messages ,userMessage]);
+    setIsWaitingForResponse(true); // Block further messages
 
     const data = new FormData();
     data.append("file", file);
@@ -212,6 +212,7 @@ const Chat = ({ session }: { session: Session }) => {
           <div className="flex items-center w-full max-w-2xl mt-2 bg-white p-2 rounded-md">
             <input
               type="file"
+              accept=".png, .jpeg, .jpg" // Restrict file types
               onChange={handleFileUpload}
               className="block w-full file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />

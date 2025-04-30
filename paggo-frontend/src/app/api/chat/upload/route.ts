@@ -37,6 +37,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Ensure the file is an image
+  const validImageTypes = ["image/png", "image/jpeg", "image/jpg"];
+  if (!validImageTypes.includes(file.type)) {
+    return NextResponse.json(
+      { error: "Uploaded file is not a valid image. Only PNG, JPEG, and JPG are allowed." },
+      { status: 400 }
+    );
+  }
+
   // Prepare the file and additional data for the backend
   const backendUrl = process.env.BACKEND_URL;
   if (!backendUrl) {
@@ -84,12 +93,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const explanation = await llmResponse.json();
+    const { explanation }=  await llmResponse.json();
 
     return NextResponse.json({
       documentId,
       explanation,
-    });
+    },
+      { status: 200 });
 
   } catch (error) {
     return NextResponse.json(
