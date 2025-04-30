@@ -1,5 +1,6 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
+import { hashPassword } from "@/lib/utils";
 
 export const { handlers, signIn, auth } = NextAuth({
     providers: [Credentials({
@@ -14,8 +15,9 @@ export const { handlers, signIn, auth } = NextAuth({
                 }                
                 const email = credentials.email as string;
                 const password = credentials.password as string;
+                const passwordHash = await hashPassword(password);
 
-                const userId = await getUserIdFromDb(email, password);
+                const userId = await getUserIdFromDb(email, passwordHash);
 
                 if (!userId) {
                     throw new Error("Invalid credentials.");
