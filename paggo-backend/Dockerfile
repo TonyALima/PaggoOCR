@@ -19,6 +19,8 @@ COPY . .
 # Generate Prisma Client code
 RUN npx prisma generate
 
+RUN npm run build
+
 EXPOSE 3000
 
 # Command to run the app
