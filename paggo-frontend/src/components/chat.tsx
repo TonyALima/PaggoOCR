@@ -100,6 +100,7 @@ const Chat = ({ session }: { session: Session }) => {
       });
 
       const { documentId, explanation,} = await response.json();
+      setCurrentDocumentId(documentId); // Update current document ID
       const botMessage = { id: userMessage.id + 1, text: explanation, isUser: false };
       setMessages((prev) => [...prev ,botMessage]);
       setUserDocuments((prev) => [
