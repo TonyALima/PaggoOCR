@@ -62,6 +62,9 @@ export async function POST(request: NextRequest) {
   try {
     const response = await fetch(`${backendUrl}/documents/upload`, {
       method: "POST",
+      headers: {
+        "x-api-key": process.env.BACKEND_API_KEY || "",
+      },
       body: backendFormData,
     });
 
@@ -81,6 +84,7 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-api-key": process.env.BACKEND_API_KEY || "",
       },
       body: JSON.stringify({ userId, documentId }),
     });

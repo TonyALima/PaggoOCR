@@ -22,6 +22,7 @@ export async function GET() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "x-api-key": process.env.BACKEND_API_KEY || "",
       },
     });
 

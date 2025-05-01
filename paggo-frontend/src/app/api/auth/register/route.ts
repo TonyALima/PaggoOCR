@@ -18,10 +18,12 @@ export async function POST(request: NextRequest) {
     const response = await fetch(backendUrl + "/auth/signup", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
+          "Content-Type": "application/json",
+          "x-api-key": process.env.BACKEND_API_KEY || "",
         },
         body: JSON.stringify({ name, email, password: password }),
     });
+    console.log("Response from backend:", response);
     if (!response.ok) {
         throw new Error("Failed to register user");
     }
