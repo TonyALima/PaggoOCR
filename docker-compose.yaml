@@ -16,9 +16,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    volumes:
-      - ./paggo-frontend:/app
-      - /app/node_modules
     depends_on:
       - backend
     restart: unless-stopped
@@ -29,9 +26,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3001:3000"
-    volumes:
-      - ./paggo-backend:/app
-      - /app/node_modules
     environment:
       - NODE_ENV=development
       - POSTGRES_URL_NON_POOLING=${POSTGRES_URL_NON_POOLING}
